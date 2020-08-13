@@ -270,7 +270,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = '/home/alg/underwater_ws/devel;/home/alg/terrain_following_ws/devel;/home/alg/freeflyer_build/native/devel;/opt/ros/kinetic;/home/alg/freeflyer/cmake'.split(';')
+            CMAKE_PREFIX_PATH = '/home/alg/underwater_ws/devel;/home/alg/terrain_following_ws/devel;/home/alg/freeflyer_build/native/devel;/home/alg/freeflyer/cmake;/opt/ros/kinetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []

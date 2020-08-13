@@ -79,7 +79,7 @@
       <root url="file://$USER_HOME$/terrain_following_ws/src/mav_control_rw/mav_lowlevel_attitude_controller" />
     </CLASSES>
     <SOURCES>
-      <root url="file://$USER_HOME$" />
+      <root url="file://$PROJECT_DIR$/../../.." />
     </SOURCES>
   </library>
 </component>

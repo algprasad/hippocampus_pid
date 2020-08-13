@@ -1,6 +1,6 @@
 /home/alg/.local/share/JetBrains/Toolbox/apps/CLion/ch-0/192.6817.32/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/alg/underwater_ws/src/hippocampus/pid_control
 -- Using CATKIN_DEVEL_PREFIX: /home/alg/underwater_ws/src/hippocampus/pid_control/cmake-build-debug/devel
--- Using CMAKE_PREFIX_PATH: /home/alg/underwater_ws/devel;/home/alg/terrain_following_ws/devel;/home/alg/freeflyer_build/native/devel;/opt/ros/kinetic;/home/alg/freeflyer/cmake
+-- Using CMAKE_PREFIX_PATH: /home/alg/underwater_ws/devel;/home/alg/terrain_following_ws/devel;/home/alg/freeflyer_build/native/devel;/home/alg/freeflyer/cmake;/opt/ros/kinetic
 -- This workspace overlays: /home/alg/underwater_ws/devel;/home/alg/terrain_following_ws/devel;/home/alg/freeflyer_build/native/devel;/opt/ros/kinetic
 -- Found PythonInterp: /usr/bin/python2 (found suitable version "2.7.12", minimum required is "2") 
 -- Using PYTHON_EXECUTABLE: /usr/bin/python2

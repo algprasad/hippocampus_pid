@@ -79,7 +79,7 @@ void initializeGlobalVariables() {
     current_linear_velocity << 0, 0, 0;
     current_angular_velocity << 0, 0, 0;
 
-    desired_position << 5, 1, 0;
+    desired_position << 5, 2, ;
     desired_orientation.x() = 0;
     desired_orientation.y() = 0;
     desired_orientation.z() = 0;
@@ -143,13 +143,15 @@ void setDesiredAttitudeThrust() {
     Eigen::Vector3d thrust_vector = orientation_mat.transpose()*force;
 
     //assign thrust values
-    desired_attitude_thrust.thrust = thrust_vector[0]*thrust_normalization_factor; //because only body frame x-axis force matters
-
+    desired_attitude_thrust.thrust = thrust_vector[0]*thrust_normalization_factor + 0.5; //because only body frame x-axis force matters
+    std::cout<< desired_attitude_thrust.thrust <<std::endl;
 
     ///desired orientation calculation
     Eigen::Vector3d b1, b2, b3;
     if(force.norm() > 0) {
-        b1 = force / force.norm();
+        if(thrust_vector[0] > 0) b1 = force / force.norm();
+        else b1 = -force/force.norm(); //TODO check if -force gives negative of each component
+
         //std::cout << b1 << std::endl;
         //convert desired orientation
         b2 << 0, cos(desired_roll), sin(desired_roll);
