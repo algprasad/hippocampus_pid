@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/alg/underwater_ws/src/hippocampus/pid_control/cmake-build-debug/devel/setup.sh

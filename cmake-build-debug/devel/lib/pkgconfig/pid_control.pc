@@ -1,0 +1,8 @@
+prefix=/home/alg/underwater_ws/src/hippocampus/pid_control/cmake-build-debug/devel
+
+Name: pid_control
+Description: Description of pid_control
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
