@@ -7,6 +7,8 @@
 #include <eigen3/Eigen/Dense>
 
 #include <iostream>
+#define SINE_TRAJECTORY 0
+#define NEGATIVE_SINE_TRAJECTORY 0
 
 
 //global variables for pose and twist values
@@ -79,7 +81,7 @@ void initializeGlobalVariables() {
     current_linear_velocity << 0, 0, 0;
     current_angular_velocity << 0, 0, 0;
 
-    desired_position << 5, 2, ;
+    desired_position << -5, 0, 0 ;
     desired_orientation.x() = 0;
     desired_orientation.y() = 0;
     desired_orientation.z() = 0;
@@ -109,6 +111,27 @@ void print( T a){
     std::cout<<a<<std::endl;
 }
 
+void getSineWaveDesiredPoint(){
+    static int i = 0;
+    double Ts = 0.005;
+    double omega = 1;
+    double t = Ts*i;
+    desired_position[0] = omega*t;
+    desired_position[1] = 0;
+    desired_position[2] = sin(desired_position[0]);
+    i++;
+}
+void getNegativeSineWaveDesiredPoint(){
+    static int i = 0;
+    double Ts = 0.005;
+    double omega = 1;
+    double t = Ts*i;
+    desired_position[0] = -omega*t;
+    desired_position[1] = 0;
+    desired_position[2] = -sin(desired_position[0]);
+    i++;
+}
+
 void setDesiredAttitudeThrust() {
     //pd control steps
     //gains
@@ -126,6 +149,8 @@ void setDesiredAttitudeThrust() {
     Eigen::Vector3d e3(0, 0, 1);
 
     double buoyant_force = mass*g; // For now asssuming that the density of AUV is same as that of water.
+    if(SINE_TRAJECTORY) getSineWaveDesiredPoint();
+    if(NEGATIVE_SINE_TRAJECTORY) getNegativeSineWaveDesiredPoint();
 
     // errors
     Eigen::Vector3d position_error = desired_position - current_position;
@@ -144,13 +169,14 @@ void setDesiredAttitudeThrust() {
 
     //assign thrust values
     desired_attitude_thrust.thrust = thrust_vector[0]*thrust_normalization_factor + 0.5; //because only body frame x-axis force matters
-    std::cout<< desired_attitude_thrust.thrust <<std::endl;
+    //std::cout<< desired_attitude_thrust.thrust <<std::endl;
+    std::cout<<force.norm()<<std::endl;
 
     ///desired orientation calculation
     Eigen::Vector3d b1, b2, b3;
-    if(force.norm() > 0) {
+    if(force.norm() > 0.2) {
         if(thrust_vector[0] > 0) b1 = force / force.norm();
-        else b1 = -force/force.norm(); //TODO check if -force gives negative of each component
+        else b1 = -force/force.norm();
 
         //std::cout << b1 << std::endl;
         //convert desired orientation
@@ -164,13 +190,13 @@ void setDesiredAttitudeThrust() {
         b2 = b3.cross(b1);
     }
 
-    else {
+    /*else {
 
         b2 << 0, cos(desired_roll), sin(desired_roll);
         b3 << 0, -sin(desired_roll), cos(desired_roll);
         Eigen::Vector3d b2xb3 =  b2.cross(b3);
         b1 = b2xb3/b2xb3.norm();
-    }
+    }*/
 
     Eigen::Matrix3d desired_rotation_matrix;
     desired_rotation_matrix << b1, b2, b3;
