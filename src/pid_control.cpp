@@ -7,7 +7,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include <iostream>
-#define SINE_TRAJECTORY 0
+#define SINE_TRAJECTORY 1
 #define NEGATIVE_SINE_TRAJECTORY 0
 
 
@@ -16,6 +16,12 @@ Eigen::Vector3d current_position(0, 0, 0), desired_position(0, 0, 0);
 Eigen::Quaterniond current_orientation(1, 0, 0, 0), desired_orientation(1, 0, 0, 0);
 Eigen::Vector3d current_linear_velocity(0, 0, 0), desired_linear_velocity(0, 0, 0);
 Eigen::Vector3d current_angular_velocity(0, 0, 0), desired_angular_velocity(0, 0, 0);
+
+//gobal variables for Integration control
+int error_buffer = 100;
+int integration_terms = 2;
+std::vector<Eigen::Vector3d> position_error_history;
+
 
 //desired accleration
 Eigen::Vector3d desired_acceleration(0, 0, 0);
@@ -103,6 +109,10 @@ void initializeGlobalVariables() {
     //desired accceleration
     desired_acceleration << 0, 0, 0;
 
+    //set size of error buffer
+    position_error_history.resize(error_buffer, Eigen::Vector3d::Zero());
+
+   
 }
 
 //debug helper
@@ -148,6 +158,12 @@ void setDesiredAttitudeThrust() {
               0, 0, kd;
     Eigen::Vector3d e3(0, 0, 1);
 
+    double ki = 0.005;
+    Eigen::Matrix3d ki_mat;
+    ki_mat << ki, 0, 0,
+              0, ki, 0,
+              0, 0, ki;
+
     double buoyant_force = mass*g; // For now asssuming that the density of AUV is same as that of water.
     if(SINE_TRAJECTORY) getSineWaveDesiredPoint();
     if(NEGATIVE_SINE_TRAJECTORY) getNegativeSineWaveDesiredPoint();
@@ -155,12 +171,16 @@ void setDesiredAttitudeThrust() {
     // errors
     Eigen::Vector3d position_error = desired_position - current_position;
     Eigen::Vector3d velocity_error = desired_linear_velocity - current_linear_velocity;
+    Eigen::Vector3d integral_error = Eigen::Vector3d::Zero();
+    for(int i = 0; i < integration_terms; ++i){
+        integral_error += position_error_history.at(i);
+    }
     Eigen::Vector3d drag_force;
     drag_force <<  0.5*rho*surface_area*cd*current_linear_velocity[0]*current_linear_velocity[0],
                    0.5*rho*surface_area*cd*current_linear_velocity[1]*current_linear_velocity[1],
                    0.5*rho*surface_area*cd*current_linear_velocity[2]*current_linear_velocity[2];
 
-    Eigen::Vector3d force = kp_mat*position_error + kd_mat*velocity_error + mass*g*e3 - buoyant_force*e3 + desired_acceleration; //TODO(ALG): Add the buoyancy and drag
+    Eigen::Vector3d force = kp_mat*position_error + kd_mat*velocity_error + ki_mat*integral_error + mass*g*e3 - buoyant_force*e3 + desired_acceleration; //TODO(ALG): Add the buoyancy and drag
     //print(force);
     //print(force.norm());
     //get rotation matrices
@@ -208,6 +228,10 @@ void setDesiredAttitudeThrust() {
     desired_attitude_thrust.orientation.y = desired_quaternion.y();
     desired_attitude_thrust.orientation.z = desired_quaternion.z();
     desired_attitude_thrust.orientation.w = desired_quaternion.w();
+
+    //update position error buffer
+    position_error_history.insert(position_error_history.begin(),position_error);
+    position_error_history.resize(error_buffer, Eigen::Vector3d::Zero());
 
 }
 
