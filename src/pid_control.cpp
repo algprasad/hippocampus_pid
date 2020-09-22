@@ -7,7 +7,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include <iostream>
-#define SINE_TRAJECTORY 1
+#define SINE_TRAJECTORY 0
 #define NEGATIVE_SINE_TRAJECTORY 0
 
 
@@ -87,7 +87,7 @@ void initializeGlobalVariables() {
     current_linear_velocity << 0, 0, 0;
     current_angular_velocity << 0, 0, 0;
 
-    desired_position << -5, 0, 0 ;
+    desired_position << 0, 0, 0 ;
     desired_orientation.x() = 0;
     desired_orientation.y() = 0;
     desired_orientation.z() = 0;
@@ -256,6 +256,10 @@ int main(int argc, char **argv){
     ros::Rate rate(50);
 
     initializeGlobalVariables();
+
+    //rosparam for desired position
+    //nh.param("desired")
+
 
     while(ros::ok()){
 
