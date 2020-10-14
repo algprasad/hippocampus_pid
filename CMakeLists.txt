@@ -210,3 +210,5 @@ include_directories(
 # catkin_add_nosetests(test)
 add_executable(pid_control src/pid_control.cpp)
 target_link_libraries(pid_control  ${catkin_LIBRARIES})
+add_executable(udrone_straight src/udrone_straight.cpp)
+target_link_libraries(udrone_straight  ${catkin_LIBRARIES})
