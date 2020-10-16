@@ -10,7 +10,8 @@
 #include <iostream>
 #define SINE_TRAJECTORY 0
 #define NEGATIVE_SINE_TRAJECTORY 0
-#define STRAIGHT_TRAJECTORY 1
+// #define STRAIGHT_TRAJECTORY 0
+// #define LEADER 0
 
 
 //global variables for pose and twist values
@@ -18,6 +19,11 @@ Eigen::Vector3d current_position(0, 0, 0), desired_position(0, 0, 0);
 Eigen::Quaterniond current_orientation(1, 0, 0, 0), desired_orientation(1, 0, 0, 0);
 Eigen::Vector3d current_linear_velocity(0, 0, 0), desired_linear_velocity(0, 0, 0);
 Eigen::Vector3d current_angular_velocity(0, 0, 0), desired_angular_velocity(0, 0, 0);
+
+//pose for leader to send to follower
+ros::Publisher pub_reef_follow_setpoint;
+geometry_msgs::PoseStamped target_pose;
+static int seq = 1;
 
 //gobal variables for Integration control
 int error_buffer = 100;
@@ -47,6 +53,8 @@ double surface_area = 1; //m2
 double rho = 1; //kg/m3 of
 //coffecient of drag
 double cd = 0.1;
+
+bool leader = 0;
 
 //starting depth
 // double start_depth = -2.0;
@@ -82,7 +90,18 @@ void desiredTwistCallback(nav_msgs::OdometryPtr msg){
 }
 
 void sonarCallback(sensor_msgs::Range msg){
-    
+    if(leader){
+        target_pose.header.seq = seq++;
+
+        target_pose.pose.position.x = current_position[0];
+        target_pose.pose.position.y = current_position[1];
+        if(msg.range == msg.max_range) target_pose.pose.position.z = current_position[2];
+        else target_pose.pose.position.z = (current_position[2]-msg.range+1.0);
+
+        pub_reef_follow_setpoint.publish(target_pose);
+        std::cout<<target_pose<<std::endl;
+    }
+    else std::cout<<msg.range<<std::endl;
 }
 
 void initializeGlobalVariables() {
@@ -101,6 +120,11 @@ void initializeGlobalVariables() {
     desired_orientation.y() = 0;
     desired_orientation.z() = 0;
     desired_orientation.w() = 1;
+
+    target_pose.pose.orientation.x = 0;
+    target_pose.pose.orientation.y = 0;
+    target_pose.pose.orientation.z = 0;
+    target_pose.pose.orientation.w = 1;
 
     desired_linear_velocity << 0, 0, 0;
     desired_angular_velocity << 0, 0, 0;
@@ -186,7 +210,7 @@ void setDesiredAttitudeThrust() {
     double buoyant_force = mass*g; // For now asssuming that the density of AUV is same as that of water.
     if(SINE_TRAJECTORY) getSineWaveDesiredPoint();
     if(NEGATIVE_SINE_TRAJECTORY) getNegativeSineWaveDesiredPoint();
-    if(STRAIGHT_TRAJECTORY) getStraightDesiredPoint();
+    if(leader) getStraightDesiredPoint();
 
     // errors
     Eigen::Vector3d position_error = desired_position - current_position;
@@ -210,7 +234,7 @@ void setDesiredAttitudeThrust() {
     //assign thrust values
     desired_attitude_thrust.thrust = thrust_vector[0]*thrust_normalization_factor + 0.5; //because only body frame x-axis force matters
     //std::cout<< desired_attitude_thrust.thrust <<std::endl;
-    std::cout<<force.norm()<<std::endl;
+    //std::cout<<force.norm()<<std::endl;
 
     ///desired orientation calculation
     Eigen::Vector3d b1, b2, b3;
@@ -255,20 +279,31 @@ void setDesiredAttitudeThrust() {
 
 }
 
-void sonarCallback 
+int main(int argc, char *argv[]){
 
-int main(int argc, char **argv){
     ros::init(argc, argv, "hippocampus_pid_control");
-    ros::NodeHandle nh;
+    std::string param;
+    ros::NodeHandle nh("~");
+    std::string check;
+    nh.getParam("param", check);
+    if(check.compare("leader") == 0) {
+        leader = 1;
+        std::cout<<"Leader mode"<<std::endl;
+    }
 
     // Publisher and Subsriber stuff
     ros::Publisher pub_mavros_setpoint_attitude = nh.advertise<mavros_msgs::AttitudeTarget>("/hippocampus/setpoint_raw/attitude", 1000);
 
+    // Publisher for leader drone to publishe target terrain follow setpoints
+    pub_reef_follow_setpoint = nh.advertise<geometry_msgs::PoseStamped>("/hippocampus/desired_pose", 10);
+
+    ros::Subscriber sub_sonar = nh.subscribe("/sensor/sonar0", 10, sonarCallback);
+    
     //get current pose and twist
     // current pose
     ros::Subscriber sub_current_pose = nh.subscribe("/mavros/local_position/pose", 1000, mavrosGlobalPositionCallback);
     //desired_pose
-    ros::Subscriber sub_desired_pose = nh.subscribe("hippocampus/desired_pose", 1, desiredPoseCallback);
+    ros::Subscriber sub_desired_pose = nh.subscribe("/hippocampus/desired_pose", 1, desiredPoseCallback);
 
     //current twist
     ros::Subscriber sub_current_twist = nh.subscribe("/mavros/local_position/odom", 1, mavrosOdomCallback);
