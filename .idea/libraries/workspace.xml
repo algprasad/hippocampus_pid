@@ -29,7 +29,6 @@
       <root url="file://$PROJECT_DIR$/../../desistek_saga/desistek_saga_gazebo" />
       <root url="file://$USER_HOME$/terrain_following_ws/src/Firmware" />
       <root url="file://$USER_HOME$/terrain_following_ws/src/rotors_simulator/rotors_control" />
-      <root url="file://$PROJECT_DIR$/../../rex_rov_trajectory" />
       <root url="file://$USER_HOME$/terrain_following_ws/src/trajectory_generator_grid_map" />
       <root url="file://$PROJECT_DIR$/../../uuv_simulator/uuv_control/uuv_thruster_manager" />
       <root url="file://$USER_HOME$/freeflyer" />
@@ -79,7 +78,7 @@
       <root url="file://$USER_HOME$/terrain_following_ws/src/mav_control_rw/mav_lowlevel_attitude_controller" />
     </CLASSES>
     <SOURCES>
-      <root url="file://$USER_HOME$" />
+      <root url="file://$USER_HOME$/.gazebo/models/sinosoidal_terrain/meshes" />
     </SOURCES>
   </library>
 </component>

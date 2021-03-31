@@ -145,7 +145,7 @@ void getNegativeSineWaveDesiredPoint(){
 void setDesiredAttitudeThrust() {
     //pd control steps
     //gains
-    double kp = 0.5;
+    double kp = 0.75;
     Eigen::Matrix3d kp_mat;
     kp_mat << kp, 0, 0,
               0, kp, 0,
@@ -194,7 +194,7 @@ void setDesiredAttitudeThrust() {
 
     ///desired orientation calculation
     Eigen::Vector3d b1, b2, b3;
-    if(force.norm() > 0.2) {
+    if(force.norm() > 0.5) {
         if(thrust_vector[0] > 0) b1 = force / force.norm();
         else b1 = -force/force.norm();
 
